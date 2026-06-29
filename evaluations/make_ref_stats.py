@@ -8,10 +8,10 @@ from evaluator import Evaluator
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Add FID/sFID statistics to a reference .npz with arr_0 images."
+        description="Compute FID/sFID statistics from a .npz with arr_0 images."
     )
     parser.add_argument("input_npz", help="input .npz containing arr_0 images")
-    parser.add_argument("output_npz", help="output .npz with added statistics")
+    parser.add_argument("output_npz", help="output .npz containing only statistics")
     parser.add_argument("--batch_size", type=int, default=64)
     args = parser.parse_args()
 
@@ -39,16 +39,13 @@ def main():
     stats = evaluator.compute_statistics(pool_acts)
     stats_spatial = evaluator.compute_statistics(spatial_acts)
 
-    out = {key: obj[key] for key in obj.files}
-    out.update(
-        {
-            "mu": stats.mu,
-            "sigma": stats.sigma,
-            "mu_s": stats_spatial.mu,
-            "sigma_s": stats_spatial.sigma,
-        }
+    np.savez(
+        args.output_npz,
+        mu=stats.mu,
+        sigma=stats.sigma,
+        mu_s=stats_spatial.mu,
+        sigma_s=stats_spatial.sigma,
     )
-    np.savez(args.output_npz, **out)
     print(f"saved {args.output_npz}")
 
 
